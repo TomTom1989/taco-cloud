@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    generate-unique-name: false
+    name: tacocloud
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+  sql:
+    init:
+      mode: always
+      platform: h2
+      scripts: classpath:schema.sql,classpath:data.sql 
+
