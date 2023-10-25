@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -27,7 +26,6 @@ public class DesignTacoController {
 	
 private final IngredientRepository ingredientRepo;
 
-@Autowired
 public DesignTacoController(
 IngredientRepository ingredientRepo) {
 this.ingredientRepo = ingredientRepo;
@@ -62,8 +60,7 @@ filterByType((List<Ingredient>) ingredients, type));
  if (errors.hasErrors()) {
  return "design";
  }
- // Save the taco...
- // We'll do this in chapter 3
+
  log.info("Processing taco: " + taco);
  return "redirect:/orders/current";
  }

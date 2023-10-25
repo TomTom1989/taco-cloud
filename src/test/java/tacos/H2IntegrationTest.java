@@ -8,13 +8,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest
-public class H2IntegrationTest {
+class H2IntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    public void testDefaultSettings() throws Exception {
+    void testDefaultSettings() throws Exception {
         assertThat(this.jdbcTemplate.queryForObject("SELECT 1", Integer.class)).isEqualTo(1);
     }
 }
