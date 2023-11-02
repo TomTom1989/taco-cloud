@@ -16,8 +16,9 @@ import tacos.Ingredient;
 import tacos.data.IngredientRepository;
 import tacos.web.DesignTacoController;
 
-@ExtendWith(MockitoExtension.class) // Use MockitoExtension for JUnit 5
-public class DesignTacoControllerTest {
+// Use MockitoExtension for JUnit 5
+@ExtendWith(MockitoExtension.class)
+class DesignTacoControllerTest {
 
     @InjectMocks
     private DesignTacoController controller;
@@ -29,7 +30,7 @@ public class DesignTacoControllerTest {
     private IngredientRepository ingredientRepo;
 
     @Test
-    public void testAddIngredientsToModel() {
+    void testAddIngredientsToModel() {
         // Create a list of ingredients that you expect to be returned by the repository
         List<Ingredient> mockIngredients = Arrays.asList(
             new Ingredient("1", "Ingredient1", Ingredient.Type.PROTEIN),

@@ -1,19 +1,20 @@
 package tacos;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
+import java.io.Serializable;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
 @Data
+@Document(collection = "ingredients")
 @AllArgsConstructor
 @NoArgsConstructor(access=AccessLevel.PRIVATE, force=true)
-@Table("Ingredient")
-public class Ingredient {
+public class Ingredient implements Serializable{
+	private static final long serialVersionUID = 1L;
 	
- @PrimaryKey
+ @Id
  private String id;
  private String name;
  private Type type;
@@ -22,4 +23,3 @@ public class Ingredient {
  WRAP, PROTEIN, VEGGIES, CHEESE, SAUCE
  }
 }
-

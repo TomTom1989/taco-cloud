@@ -1,106 +1,94 @@
 package tacos.web;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import jakarta.validation.Valid;
-
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.ui.Model;
+
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import tacos.Ingredient;
 import tacos.Ingredient.Type;
-import tacos.IngredientUDT;
 import tacos.Taco;
-import tacos.TacoOrder;
-import tacos.TacoUDT;
 import tacos.data.IngredientRepository;
-import tacos.data.TacoRepository; // Import TacoRepository
 import tacos.data.OrderRepository;
+import tacos.data.TacoRepository;
 
 @Slf4j
 @Controller
 @RequestMapping("/design")
-@SessionAttributes("tacoOrder")
+@SessionAttributes("sessionTacos")
 public class DesignTacoController {
 
     private final IngredientRepository ingredientRepo;
-    private final TacoRepository tacoRepository; // Inject TacoRepository
     private final OrderRepository orderRepository;
-    
-    public DesignTacoController(
-            IngredientRepository ingredientRepo,
-            TacoRepository tacoRepository,
-            OrderRepository orderRepository) {
+    private final TacoRepository tacoRepo;
+
+    public DesignTacoController(IngredientRepository ingredientRepo, OrderRepository orderRepository,TacoRepository tacoRepo) {
         this.ingredientRepo = ingredientRepo;
-        this.tacoRepository = tacoRepository;
-        this.orderRepository = orderRepository; // Initialize OrderRepository
+        this.orderRepository = orderRepository;
+        this.tacoRepo = tacoRepo;
+        log.info("DesignTacoController initialized");
     }
 
     @ModelAttribute
     public void addIngredientsToModel(Model model) {
         Iterable<Ingredient> ingredients = ingredientRepo.findAll();
+        log.info("Fetched ingredients: {}", ingredients);
         Type[] types = Ingredient.Type.values();
         for (Type type : types) {
-            model.addAttribute(type.toString().toLowerCase(),
-                    filterByType((List<Ingredient>) ingredients, type));
+            model.addAttribute(type.toString().toLowerCase(), filterByType(ingredients, type));
         }
     }
 
     @GetMapping
     public String showDesignForm(Model model) {
+        log.info("Showing taco design form");
         model.addAttribute("taco", new Taco());
         return "design";
     }
 
-    private Iterable<Ingredient> filterByType(
-            List<Ingredient> ingredients, Type type) {
-        return ingredients
-                .stream()
+    private List<Ingredient> filterByType(Iterable<Ingredient> ingredients, Type type) {
+        List<Ingredient> ingredientsOfType = ((List<Ingredient>) ingredients).stream()
                 .filter(x -> x.getType().equals(type))
                 .collect(Collectors.toList());
+
+        log.info("Ingredients of type {}: {}", type, ingredientsOfType);
+
+        return ingredientsOfType;
     }
 
     @PostMapping
-    public String processTaco(@Valid @ModelAttribute Taco taco, Errors errors) {
-        // Convert ingredientIds to IngredientUDT before validation
-        List<IngredientUDT> selectedIngredients = taco.getIngredientIds().stream()
-                .map(id -> ingredientRepo.findById(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(Taco.TacoUDRUtils::toIngredientUDT)
-                .collect(Collectors.toList());
-
-        taco.setIngredients(selectedIngredients);
-
-        // Now, check for validation errors
+    public String processTaco(@Valid @ModelAttribute Taco taco, Errors errors, Model model) {
         if (errors.hasErrors()) {
+            log.warn("Validation errors while processing taco: {}", errors.getAllErrors());
             return "design";
         }
 
-        // Save the Taco object into the Taco database
-        Taco savedTaco = tacoRepository.save(taco);
-        
-     // Convert the saved Taco to a TacoUDT
-        TacoUDT tacoUDT = new TacoUDT(savedTaco.getName(), savedTaco.getIngredients());
-    
-     // Create a TacoOrder and associate it with the TacoUDT
-        TacoOrder tacoOrder = new TacoOrder(); 
-        tacoOrder.addTaco(tacoUDT);
+        // Save the taco to the MongoDB collection
+        tacoRepo.save(taco);
+        log.info("Saved taco to the database: {}", taco);
 
-        orderRepository.save(tacoOrder);
+        // Check if sessionTacos attribute exists in the model
+        if (!model.containsAttribute("sessionTacos")) {
+            model.addAttribute("sessionTacos", new ArrayList<Taco>());
+            log.info("Initialized sessionTacos in the session");
+        }
 
+        // Retrieve the sessionTacos attribute from the model
+        List<Taco> sessionTacos = (List<Taco>) model.getAttribute("sessionTacos");
+        sessionTacos.add(taco);
+        log.info("Taco added to session: {}", taco);
 
-        log.info("Processing taco: " + taco);
         return "redirect:/orders/current";
     }
 

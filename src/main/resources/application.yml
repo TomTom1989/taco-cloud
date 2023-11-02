@@ -1,6 +1,6 @@
 spring:
-  cassandra:
-    contact-points: localhost:9043
-    keyspace-name: tacocloud
-    schema-action: CREATE_IF_NOT_EXISTS
-    local-datacenter: datacenter1
+  data:
+   mongodb:
+     host: localhost
+     port: 27017
+     database: tacocloud

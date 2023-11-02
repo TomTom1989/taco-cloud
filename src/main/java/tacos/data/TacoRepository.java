@@ -1,10 +1,7 @@
 package tacos.data;
 
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import tacos.Taco;
 
-import java.util.UUID;
-
-public interface TacoRepository extends CassandraRepository<Taco, UUID> {
+public interface TacoRepository extends MongoRepository<Taco, String> {
 }
-
